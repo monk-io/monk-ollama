@@ -21,4 +21,3 @@ ollama:
       protocol: tcp
       port: 11434
       host-port: 11434
-      publish: true
