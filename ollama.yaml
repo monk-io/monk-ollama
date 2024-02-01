@@ -1,0 +1,24 @@
+namespace: ollama
+ollama:
+  defines: runnable
+  metadata:
+    website: https://ollama.ai
+    name: Ollama
+    icon: https://avatars.githubusercontent.com/u/151674099?s=48&v=4
+    publisher: monk.io
+    source: https://github.com/ollama/ollama
+    tags: ai, llm
+    description: Get up and running with large language models, locally.
+  containers:
+    ollama:
+      image: ollama/ollama:latest
+      resources:
+        requests:
+          nvidia.com/gpu: 1
+  services:
+    web:
+      container: ollama
+      protocol: tcp
+      port: 11434
+      host-port: 11434
+      publish: true
