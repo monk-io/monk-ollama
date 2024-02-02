@@ -1,0 +1,2 @@
+REPO monk-ollama
+LOAD ollama.yaml
