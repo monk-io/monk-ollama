@@ -19,7 +19,7 @@ ollama:
       port: 11434
       host-port: 11434
 
-ollama-cpu:
+ollama-gpu:
   defines: runnable
   metadata:
     website: https://ollama.ai
