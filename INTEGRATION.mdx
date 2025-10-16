@@ -1,0 +1,173 @@
+---
+title: Ollama
+description: Ready-to-run Ollama container template you can run directly or inherit to integrate local LLM inference into your stack.
+primary_category: ai-ml
+tags: [ollama, llm, ai, ml, template, runnable, inference, language-model, local-ai]
+integration_type: template
+hosting_models: [self-hosted]
+website_url: https://ollama.ai/
+docs_url: https://github.com/jmorganca/ollama/blob/main/docs/api.md
+publisher: monk.io
+---
+
+## Overview
+
+This template provides a production‑ready Ollama instance as a Monk runnable. You can:
+
+- Run it directly to get a managed Ollama server for local LLM inference
+- Inherit it in your own AI applications to add language model capabilities
+
+Ollama is a lightweight, extensible framework for building and running language models locally. It provides a simple API to run models like Llama 2, Code Llama, Mistral, and others without requiring cloud services.
+
+## What this template manages
+
+- Ollama container (`ollama/ollama` image)
+- REST API service on port 11434
+- Model storage and caching
+- GPU acceleration support (optional)
+- Multiple model management
+
+## Quick start (run directly)
+
+1) Load templates
+
+```bash
+monk load MANIFEST
+```
+
+2) Run Ollama with defaults
+
+```bash
+monk run ollama/ollama
+```
+
+3) Pull and run a model
+
+```bash
+# Pull a model
+curl http://localhost:11434/api/pull -d '{"name": "llama2"}'
+
+# Generate text
+curl http://localhost:11434/api/generate -d '{
+  "model": "llama2",
+  "prompt": "Why is the sky blue?"
+}'
+```
+
+Once started, the API is available at `localhost:11434` (or the runnable hostname inside Monk networks).
+
+## Configuration
+
+Key variables you can customize in this template:
+
+```yaml
+variables:
+  ollama-image-tag: "latest"          # container image tag
+  api-port: "11434"                   # API port
+  ollama-models-dir: "/root/.ollama"  # models storage directory
+  gpu-support: "false"                # enable GPU acceleration
+```
+
+Models are persisted under `${monk-volume-path}/ollama` on the host.
+
+## Use by inheritance (recommended for AI apps)
+
+Inherit the Ollama runnable in your application and declare a connection. Example:
+
+```yaml
+namespace: myapp
+llm:
+  defines: runnable
+  inherits: ollama/ollama
+api:
+  defines: runnable
+  containers:
+    api:
+      image: myorg/ai-api
+  connections:
+    ollama:
+      runnable: llm
+      service: ollama
+  variables:
+    ollama-host:
+      value: <- connection-hostname("ollama")
+    ollama-port:
+      value: "11434"
+```
+
+Then run your AI application:
+
+```bash
+monk run myapp/api
+```
+
+## Ports and connectivity
+
+- Service: `ollama` on TCP port `11434`
+- From other runnables in the same process group, use `connection-hostname("<connection-name>")` to resolve the Ollama host.
+
+## Persistence and configuration
+
+- Models path: `${monk-volume-path}/ollama:/root/.ollama`
+- Downloaded models are cached and reused across restarts
+
+## Features
+
+- Run LLMs locally without cloud dependencies
+- Multiple model support (Llama 2, Mistral, Code Llama, etc.)
+- Simple REST API
+- Model customization and fine-tuning
+- GPU acceleration (CUDA, Metal)
+- Streaming responses
+- Model library and registry
+
+## Available Models
+
+Popular models you can run:
+- `llama2` - Meta's Llama 2 (7B, 13B, 70B)
+- `mistral` - Mistral 7B
+- `codellama` - Code Llama for code generation
+- `phi` - Microsoft Phi-2
+- `vicuna` - Vicuna chat model
+- And many more at [ollama.ai/library](https://ollama.ai/library)
+
+## Use cases
+
+Ollama excels at:
+- Local AI assistants
+- Code generation and completion
+- Document summarization
+- Question answering systems
+- Text classification
+- Privacy-focused AI applications
+
+
+## Related templates
+
+- Combine with vector databases (`qdrant/`, `chroma/`) for RAG
+- Use with `langfuse/` for LLM observability and tracing
+- Integrate with application frameworks for AI-powered apps
+
+## Troubleshooting
+
+- List available models:
+
+```bash
+curl http://localhost:11434/api/tags
+```
+
+- Check Ollama status:
+
+```bash
+curl http://localhost:11434/api/version
+```
+
+- Check logs:
+
+```bash
+monk logs -l 500 -f ollama/ollama
+```
+
+- For GPU support, ensure NVIDIA drivers and Docker GPU runtime are installed.
+- Large models (70B+) require significant RAM/VRAM.
+- First model download can take several minutes depending on model size.
